@@ -12,6 +12,10 @@ app = Flask(__name__)
 CORS(app)  # Habilita CORS para toda la aplicación
 port = int(os.environ.get('PORT', 4000))
 
+# Ruta de bienvenida
+@app.route('/')
+def bienvenida():
+    return 'Bienvenidos a la aplicación de OCR.'
 
 @app.route('/realizar-ocr', methods=['POST'])
 def realizar_ocr():
