@@ -10,6 +10,8 @@ from flask_cors import CORS  # Importa la extensión
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para toda la aplicación
+port = int(os.environ.get('PORT', 4000))
+
 
 @app.route('/realizar-ocr', methods=['POST'])
 def realizar_ocr():
@@ -331,4 +333,4 @@ def realizar_ocr():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0', port=4000, debug=False)
+   app.run(host='0.0.0.0', port=port, debug=False)
