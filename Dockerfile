@@ -21,6 +21,8 @@ RUN pip install -r requirements.txt
 
 # Establece el comando para ejecutar tu aplicación
 #CMD [ "python", "src/ocr-prueba.py" ]
+ENV PORT=4000
+EXPOSE 4000
 
 CMD ["gunicorn", "-b", "0.0.0.0:4000", "src.ocr-prueba:app"]
 
