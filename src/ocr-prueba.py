@@ -343,8 +343,25 @@ def realizar_ocr():
 def realizar_ocr2():
         data = request.json
         imagen_base64 = data['imagen_base64']
+        imagen_bytes = base64.b64decode(imagen_base64)
+
+        # Crear una imagen PIL desde los bytes decodificados
+        imagen_original = Image.open(io.BytesIO(imagen_bytes))
+
+        coordenadas_corte1 = (5, 0, 250, 100)
+        parte_cortada1 = imagen_original.crop(coordenadas_corte1)
+        nueva_imagen1 = Image.new('RGB', imagen_original.size)
+        nueva_imagen1.paste(parte_cortada1.resize(imagen_original.size), (0, 0))
+
+        nueva_imagen1.save('imagen_rearmada1.jpg')
+        imagen_original.close()
+        imagen1 = Image.open('imagen_rearmada1.jpg')
+        texto_imagenes = []
+        texto_imagen1 = pytesseract.image_to_string(imagen1)
+
+
         print(imagen_base64)
-        return imagen_base64
+        return texto_imagen1
 
 
 @app.route('/realizar-ocr3', methods=['POST'])
