@@ -6,6 +6,7 @@ import io
 import json
 import os
 from flask_cors import CORS  # Importa la extensión
+from concurrent.futures import ThreadPoolExecutor
 
 
 app = Flask(__name__)
@@ -339,29 +340,65 @@ def realizar_ocr():
         error_message = f"Error en la ejecución del método realizar_ocr: {str(e)}"
         return jsonify({'error': error_message}), 500
     
+# @app.route('/realizar-ocr2', methods=['POST'])
+# def realizar_ocr2():
+#         data = request.json
+#         imagen_base64 = data['imagen_base64']
+#         imagen_bytes = base64.b64decode(imagen_base64)
+
+#         # Crear una imagen PIL desde los bytes decodificados
+#         imagen_original = Image.open(io.BytesIO(imagen_bytes))
+
+#         coordenadas_corte1 = (5, 0, 250, 100)
+#         parte_cortada1 = imagen_original.crop(coordenadas_corte1)
+#         nueva_imagen1 = Image.new('RGB', imagen_original.size)
+#         nueva_imagen1.paste(parte_cortada1.resize(imagen_original.size), (0, 0))
+
+#         nueva_imagen1.save('imagen_rearmada1.jpg')
+#         imagen_original.close()
+#         imagen1 = Image.open('imagen_rearmada1.jpg')
+#         texto_imagenes = []
+#         texto_imagen1 = pytesseract.image_to_string(imagen1)
+
+
+#         print(imagen_base64)
+#         return texto_imagen1
 @app.route('/realizar-ocr2', methods=['POST'])
 def realizar_ocr2():
+    try:
+        # Obtener la imagen base64 desde la solicitud
         data = request.json
         imagen_base64 = data['imagen_base64']
+
+        # Decodificar la imagen base64
         imagen_bytes = base64.b64decode(imagen_base64)
 
         # Crear una imagen PIL desde los bytes decodificados
         imagen_original = Image.open(io.BytesIO(imagen_bytes))
 
-        coordenadas_corte1 = (5, 0, 250, 100)
-        parte_cortada1 = imagen_original.crop(coordenadas_corte1)
-        nueva_imagen1 = Image.new('RGB', imagen_original.size)
-        nueva_imagen1.paste(parte_cortada1.resize(imagen_original.size), (0, 0))
+        coordenadas_corte = [  # Define las coordenadas de corte aquí
+            (5, 0, 250, 100),
+            # Define las otras coordenadas de corte aquí
+        ]
 
-        nueva_imagen1.save('imagen_rearmada1.jpg')
-        imagen_original.close()
-        imagen1 = Image.open('imagen_rearmada1.jpg')
-        texto_imagenes = []
-        texto_imagen1 = pytesseract.image_to_string(imagen1)
+        def ocr_parte(part):
+            parte_cortada = imagen_original.crop(part)
+            texto_parte = pytesseract.image_to_string(parte_cortada)
+            return texto_parte.strip()
 
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            resultados_ocr = list(executor.map(ocr_parte, coordenadas_corte))
 
-        print(imagen_base64)
-        return texto_imagen1
+        # Formatear el resultado en JSON
+        resultado_json = {
+            'textos_partes': resultados_ocr
+        }
+
+        return jsonify(resultado_json)
+
+    except Exception as e:
+        error_message = f"Error en la ejecución del método realizar_ocr3: {str(e)}"
+        return jsonify({'error': error_message}), 500
 
 
 @app.route('/realizar-ocr3', methods=['POST'])
