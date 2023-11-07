@@ -363,12 +363,42 @@ def realizar_ocr():
 
 #         print(imagen_base64)
 #         return texto_imagen1
-def realizar_ocr_parte(imagen_original, coordenadas):
-    parte_cortada = imagen_original.crop(coordenadas)
-    nueva_imagen = parte_cortada.resize(imagen_original.size)
-    texto = pytesseract.image_to_string(nueva_imagen)
-    parte_cortada.close()
-    return texto.strip()
+@app.route('/realizar-ocr2', methods=['POST'])
+def realizar_ocr2():
+    try:
+        # Obtener la imagen base64 desde la solicitud
+        data = request.json
+        imagen_base64 = data['imagen_base64']
+
+        # Decodificar la imagen base64
+        imagen_bytes = base64.b64decode(imagen_base64)
+
+        # Crear una imagen PIL desde los bytes decodificados
+        imagen_original = Image.open(io.BytesIO(imagen_bytes))
+
+        coordenadas_corte = [  # Define las coordenadas de corte aquí
+            (5, 0, 250, 100),
+            # Define las otras coordenadas de corte aquí
+        ]
+
+        def ocr_parte(part):
+            parte_cortada = imagen_original.crop(part)
+            texto_parte = pytesseract.image_to_string(parte_cortada)
+            return texto_parte.strip()
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            resultados_ocr = list(executor.map(ocr_parte, coordenadas_corte))
+
+        # Formatear el resultado en JSON
+        resultado_json = {
+            'textos_partes': resultados_ocr
+        }
+
+        return jsonify(resultado_json)
+
+    except Exception as e:
+        error_message = f"Error en la ejecución del método realizar_ocr3: {str(e)}"
+        return jsonify({'error': error_message}), 500
 
 @app.route('/realizar-ocr3', methods=['POST'])
 def realizar_ocr3():
@@ -383,33 +413,85 @@ def realizar_ocr3():
             (255, 0, 505, 100),
             (510, 0, 1010, 100),
             (910, 0, 1210, 90),
-            (0, 105, 300, 165),
-            (310, 105, 460, 165),
-            (470, 105, 810, 165),
-            (0, 175, 300, 255),
-            (310, 175, 560, 255),
-            (570, 175, 970, 185),
-            (0, 260, 300, 321),
-            (310, 260, 560, 321),
-            (0, 330, 300, 400),
-            (310, 330, 560, 400),
-            (570, 330, 820, 400),
-            (830, 330, 1080, 400),
-            (0, 405, 300, 465),
+            (0, 100, 300, 160),
+            (310, 100, 460, 160),
+            (470, 100, 810, 160),
+            (0, 150, 300, 220),
+            (310, 150, 560, 220),
+            (570, 150, 970, 220),
+            (990, 150, 1360, 220),
+            (0, 210, 300, 271),
+            (310, 210, 560, 271),
+            (0, 260, 300, 330),
+            (310, 260, 560, 330),
+            (570, 260, 820, 330),
+            (830, 260, 1190, 330)
         ]
 
-        resultados = {}
+        texto_imagenes = []
 
-        for i, corte in enumerate(coordenadas):
-            resultados[f'Parte {i + 1}'] = realizar_ocr_parte(imagen_original, corte)
+        for i, coords in enumerate(coordenadas):
+            parte_cortada = imagen_original.crop(coords)
+            nueva_imagen = Image.new('RGB', imagen_original.size)
+            nueva_imagen.paste(parte_cortada.resize(imagen_original.size), (0, 0))
+            nueva_imagen.save(f'imagen_rearmada{i+1}.jpg')
+            texto_imagen = pytesseract.image_to_string(nueva_imagen)
+            texto_imagenes.append(texto_imagen)
+            nueva_imagen.close()
 
-        imagen_original.close()
+        data = {
+            "Servicios": {},
+            "Equipos": {},
+            "Servicios_Adicionales": {}
+        }
 
-        return jsonify({'resultados': resultados})
+        data["Servicios"] = {
+            texto_imagenes[0].strip().split('\n')[2]: texto_imagenes[0].strip().split('\n')[3],
+            texto_imagenes[1].strip().split('\n')[0]: texto_imagenes[1].strip().split('\n')[1],
+            texto_imagenes[2].strip().split('\n')[0]: texto_imagenes[2].strip().split('\n')[1],
+            texto_imagenes[3].strip().split('\n')[0]: texto_imagenes[3].strip().split('\n')[1],
+            texto_imagenes[4].strip().split('\n')[0]: texto_imagenes[4].strip().split('\n')[1],
+            texto_imagenes[5].strip().split('\n')[0]: texto_imagenes[5].strip().split('\n')[1] if len(texto_imagenes[5]) > 1 else "-",
+            texto_imagenes[6].strip().split('\n')[0]: texto_imagenes[6].strip().split('\n')[1]
+        }
 
+        data["Equipos"] = {
+            texto_imagenes[7].strip().split('\n')[2]: texto_imagenes[7].strip().split('\n')[4],
+            texto_imagenes[8].strip().split('\n')[0]: texto_imagenes[8].strip().split('\n')[2],
+            texto_imagenes[9].strip().split('\n')[0]: texto_imagenes[9].strip().split('\n')[1],
+            texto_imagenes[10].strip().split('\n')[0]: texto_imagenes[10].strip().split('\n')[2],
+            texto_imagenes[11].strip().split('\n')[0]: texto_imagenes[11].strip().split('\n')[2],
+            texto_imagenes[12].strip().split('\n')[0]: texto_imagenes[12].strip().split('\n')[1]
+        }
+
+        data["Servicios_Adicionales"] = {
+            texto_imagenes[13].strip().split('\n')[2]: texto_imagenes[13].strip().split('\n')[4],
+            texto_imagenes[14].strip().split('\n')[0]: texto_imagenes[14].strip().split('\n')[1],
+            texto_imagenes[15].strip().split('\n')[0]: texto_imagenes[15].strip().split('\n')[1],
+            texto_imagenes[16].strip().split('\n')[0]: texto_imagenes[16].strip().split('\n')[1]
+        }
+
+        json_data = json.dumps(data, ensure_ascii=False, indent=4)
+        print(json_data)
+
+        for imagen in ['imagen_rearmada1.jpg', 'imagen_rearmada2.jpg', 'imagen_rearmada3.jpg', 'imagen_rearmada4.jpg',
+                       'imagen_rearmada5.jpg', 'imagen_rearmada6.jpg', 'imagen_rearmada7.jpg', 'imagen_rearmada8.jpg',
+                       'imagen_rearmada9.jpg', 'imagen_rearmada10.jpg', 'imagen_rearmada11.jpg', 'imagen_rearmada12.jpg',
+                       'imagen_rearmada13.jpg', 'imagen_rearmada14.jpg', 'imagen_rearmada15.jpg', 'imagen_rearmada16.jpg',
+                       'imagen_rearmada17.jpg']:
+            try:
+                os.remove(imagen)
+                print(f"Imagen {imagen} eliminada.")
+            except FileNotFoundError:
+                print(f"La imagen {imagen} no se encontró.")
+            except Exception as e:
+                print(f"Error al eliminar la imagen {imagen}: {e}")
+
+        resultado_json = {'data': data}
+        return jsonify(resultado_json)
     except Exception as e:
         error_message = f"Error en la ejecución del método realizar_ocr: {str(e)}"
-        return jsonify({'error': error_message}), 502
+        return jsonify({'error': error_message}), 500
 
 
 if __name__ == '__main__':
