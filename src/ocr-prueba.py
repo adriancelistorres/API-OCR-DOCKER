@@ -653,7 +653,7 @@ def realizar_ocr3():
         # Formatear el resultado en JSON
         resultado_json = {
         #     'textos_partes': texto_imagenes
-                    'data': "texto_imagen1"
+                    'data': data
 
 
         }
@@ -667,7 +667,7 @@ def realizar_ocr3():
 #         return jsonify({'error': str(e)}), 500
     except Exception as e:
         error_message = f"Error en la ejecución del método realizar_ocr: {str(e)}"
-        return jsonify({'error': error_message}), 500
+        return jsonify({'error': error_message}), 502
 
 
 if __name__ == '__main__':
