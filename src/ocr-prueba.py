@@ -493,6 +493,6 @@ def realizar_ocr3():
         error_message = f"Error en la ejecución del método realizar_ocr: {str(e)}"
         return jsonify({'error': error_message}), 500
 
-
+#ss
 if __name__ == '__main__':
    app.run(host='0.0.0.0', port=port, debug=True)
