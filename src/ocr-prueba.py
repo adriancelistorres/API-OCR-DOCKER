@@ -333,8 +333,11 @@ def realizar_ocr():
         return jsonify(resultado_json)
     
 
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        error_message = f"Error en la ejecución del método realizar_ocr: {str(e)}"
+        return jsonify({'error': error_message}), 500
     
 @app.route('/realizar-ocr2', methods=['POST'])
 def realizar_ocr2():
