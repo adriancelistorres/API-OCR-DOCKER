@@ -337,7 +337,7 @@ def realizar_ocr():
         return jsonify({'error': str(e)}), 500
     
 @app.route('/realizar-ocr2', methods=['POST'])
-def realizar_ocr():
+def realizar_ocr2():
         data = request.json
         imagen_base64 = data['imagen_base64']
         print(imagen_base64)
