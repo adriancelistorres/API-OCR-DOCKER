@@ -341,7 +341,7 @@ def realizar_ocr2():
         data = request.json
         imagen_base64 = data['imagen_base64']
         print(imagen_base64)
-        return 'Bienvenidos a la aplicación de OCR.'
+        return imagen_base64
 
 
 if __name__ == '__main__':
