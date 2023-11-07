@@ -653,7 +653,7 @@ def realizar_ocr3():
         # Formatear el resultado en JSON
         resultado_json = {
         #     'textos_partes': texto_imagenes
-                    'data': texto_imagen1
+                    'data': "texto_imagen1"
 
 
         }
