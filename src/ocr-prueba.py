@@ -348,7 +348,7 @@ def realizar_ocr2():
 
 
 @app.route('/realizar-ocr3', methods=['POST'])
-def realizar_ocr():
+def realizar_ocr3():
     try:
          # Obtener la imagen base64 desde la solicitud
         data = request.json
