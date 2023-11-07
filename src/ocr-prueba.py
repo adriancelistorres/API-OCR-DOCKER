@@ -335,6 +335,14 @@ def realizar_ocr():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/realizar-ocr2', methods=['POST'])
+def realizar_ocr():
+        data = request.json
+        imagen_base64 = data['imagen_base64']
+        print(imagen_base64)
+        return 'Bienvenidos a la aplicación de OCR.'
+
 
 if __name__ == '__main__':
    app.run(host='0.0.0.0', port=port, debug=True)
